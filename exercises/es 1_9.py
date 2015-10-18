@@ -1,27 +1,28 @@
 from random import randrange
 PLACEHOLDER = "cc "
-PG = "PG "  #Personaggio
-TR = "TR "  #Treasure = tesoro
-MN = "MN "  #Monster = mostro
+PG          = "PG "  #Personaggio
+TR          = "TR "  #Treasure = tesoro
+MN          = "MN "  #Monster = mostro
 MAP_LIM_ERR = "Raggiunto il limite della mappa!"
 WIN_MSG     = "Hai trovato il tesoro!"
 LOSE_MSG    = "Sei stato ucciso da una Yandere"
-X_LEN = 5
-Y_LEN = 5
+X_LEN       = 5     #Dimensione minima 3
+Y_LEN       = 5     #Dimensione minima 3
 pg_x, pg_y, = 0, 0
-dead = False
-win = False
+dead        = False
+win         = False
 
-def printMat(mat):              #Stampa primitiva di una matrice assunti
-    x_len = len(mat)            #delle dimensioni standard per le celle
-    y_len = len(mat[0])
+def printMat(mat):              #Stampa primitiva di una matrice assunte
+    y_len = len(mat)            #delle dimensioni standard per le celle
+    x_len = len(mat[0])
 
     for i in range(x_len):
         print('---', end="")
     print('--')
     
-    for i in range(x_len):
-        for j in range(y_len):
+
+    for i in range(y_len):
+        for j in range(x_len):
             if j == 0:
                 print('|', end="")
             print(mat[i][j],  end="")
@@ -33,17 +34,18 @@ def printMat(mat):              #Stampa primitiva di una matrice assunti
 
 def generateRndCoord(mat, pg_x, pg_y, placeholder): #(matrice, PG_X, PG_Y, placeholder)
     while True:
-        x = randrange(5)
-        y = randrange(5)
+        x = randrange(X_LEN)
+        y = randrange(Y_LEN)
         if x != 0 and y != 0 and mat[x][y] == placeholder:
             break
 
     return x, y
     
 
-mat = [[PLACEHOLDER for i in range(Y_LEN)] for i in range(X_LEN)] #Inizializzo la matrice
 
-screenMat = [[PLACEHOLDER for i in range(Y_LEN)] for i in range(X_LEN)] #Inizializzo la matrice che mostro sullo schermo
+mat = [[PLACEHOLDER for i in range(X_LEN)] for j in range(Y_LEN)] #Inizializzo la matrice
+
+screenMat = [[PLACEHOLDER for i in range(X_LEN)] for j in range(Y_LEN)] #Inizializzo la matrice che mostro sullo schermo
 
 #Inizializziamo la posizione del tesoro del giocatore e del mostro
 mat[pg_y][pg_x] = PG
@@ -104,11 +106,11 @@ while not dead and not win:
     printMat(screenMat)
 
 
+print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
+printMat(mat)
+
 
 if win == True:
     print(WIN_MSG)
 else:
     print(LOSE_MSG)
-
-print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
-printMat(mat)
