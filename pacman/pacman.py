@@ -85,8 +85,9 @@ class Power(Cookie):  # ...
 
 
 class Ghost(Actor):  # ...
-    W, H = 16, 16
-    dx, dy = 1, 0
+    W, H    = 16, 16
+    dx, dy  = 2, 0
+    SPEED	= 2
 
     def __init__(self, arena:Arena, x:int, y:int):
         self._arena = arena
@@ -96,9 +97,12 @@ class Ghost(Actor):  # ...
 
     def move(self):
         if going_to_wall(self._arena, self, self.dx, self.dy):
-            self.dx = 0
-            self.dy = 1
-            
+            self.dx = choice([-self.SPEED, 0, self.SPEED])
+            self.dy = choice([-self.SPEED, 0, self.SPEED])
+            while going_to_wall(self._arena, self, self.dx, self.dy) or self.dx == self.dy == 0:
+                self.dx = choice([-self.SPEED, 0, self.SPEED])
+                self.dy = choice([-self.SPEED, 0, self.SPEED])
+
         self._x += self.dx
         self._y += self.dy
 
@@ -113,31 +117,41 @@ class Ghost(Actor):  # ...
 
 
 class PacMan(Actor):  # ...
-    W, H = 16, 16
-    SPEED = 1
+    W, H 		= 16, 16
+    dx, dy      = 0, 0
+    SPEED       = 2
+    symbolPos   = 0
 
     def __init__(self, arena:Arena, x:int, y:int):
-        self._arena = arena
-        self._x     = x
-        self._y     = y
-        self._dx    = 0
-        self._dy    = 0
+        self._arena     = arena
+        self._x         = x
+        self._y         = y
+        self._symbolX   = 0
         arena.add(self)
 
     def move(self):
-        if going_to_wall()
+        if not going_to_wall(self._arena, self, self.dx, self.dy):
+            self._x += self.dx
+            self._y += self.dy
+            if self.dx or self.dy != 0 and self.dx % 4 == 0 or self.dy % 4 == 0:
+                if self.symbolPos > 0:
+                    self.symbolPos = 0
+                else:
+                    self.symbolPos += 1
+            
+        self._symbolX = self.symbolPos * self.W
 
     def moveUp(self):
-        self._dx , self._dy = 0, +self.SPEED
+        self.dx , self.dy = 0, -self.SPEED
     
     def moveDown(self):
-        self._dx , self._dy = 0, -self.SPEED
+        self.dx , self.dy = 0, +self.SPEED
     
     def moveLeft(self):
-        self._dx , self._dy = -self.SPEED, 0
+        self.dx , self.dy = -self.SPEED, 0
     
     def moveRight(self):
-        self._dx , self._dy = +self.SPEED, 0
+        self.dx , self.dy = +self.SPEED, 0
 
     def collide(self, other):
         pass
@@ -146,5 +160,5 @@ class PacMan(Actor):  # ...
         return self._x, self._y, self.W, self.H
 
     def symbol(self):
-        return 0, 0
+        return self._symbolX, 0
 
