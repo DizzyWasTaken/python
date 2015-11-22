@@ -10,6 +10,15 @@ from arena import *
 from pacman import *
 from pacman_map import *
 
+#Ghost sprites constants definition
+redGhostY      = 64
+redGhostHeigth = 16
+
+redGhost = 0, redGhostY
+pinkGhost = 0, redGhostY + redGhostHeigth
+blueGhost = 0, redGhostY + (redGhostHeigth *2)
+orangeGhost = 0, redGhostY + (redGhostHeigth * 3)
+
 arena = Arena(232, 256)
 
 for x, y, w, h in walls_pos:
@@ -20,10 +29,10 @@ for x, y in powers_pos:
     Power(arena, x, y)
 
 pacman = PacMan(arena, 112, 184)
-#Ghost(arena, 112, 88)
-#Ghost(arena, 112, 88)
-#Ghost(arena, 112, 88)
-Ghost(arena, 112, 88)
+Ghost(arena, 112, 88, redGhost)
+Ghost(arena, 112, 88, pinkGhost)
+Ghost(arena, 112, 88, blueGhost)
+Ghost(arena, 112, 88, orangeGhost)
 
 pygame.init()
 clock = pygame.time.Clock()

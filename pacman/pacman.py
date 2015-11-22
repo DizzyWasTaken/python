@@ -83,18 +83,18 @@ class Power(Cookie):  # ...
     def symbol(self):
         return 180, 52
 
-
 class Ghost(Actor):  # ...
     W, H    = 16, 16
     dx, dy  = 2, 0
     SPEED	= 2
 
-    def __init__(self, arena:Arena, x:int, y:int):
-        self._arena = arena
-        self._x     = x
-        self._y     = y
+    def __init__(self, arena:Arena, x:int, y:int, symbol:tuple):
+        self._arena     = arena
+        self._x         = x
+        self._y         = y
+        self._symbol    = symbol
         arena.add(self)
-
+                    
     def move(self):
         if going_to_wall(self._arena, self, self.dx, self.dy):
             self.dx = choice([-self.SPEED, 0, self.SPEED])
@@ -107,13 +107,14 @@ class Ghost(Actor):  # ...
         self._y += self.dy
 
     def collide(self, other):
-        pass
+        if isinstance(other, PacMan):
+            self._arena.remove(other)
 
     def rect(self):
         return self._x, self._y, self.W, self.H
     
-    def symbol(self):#TO-DO: Make 4 different sprites
-        return 0, 64
+    def symbol(self):
+        return self._symbol
 
 
 class PacMan(Actor):  # ...
@@ -121,44 +122,100 @@ class PacMan(Actor):  # ...
     dx, dy      = 0, 0
     SPEED       = 2
     symbolPos   = 0
+    userD       = 0
+    mvngAlngY   = False
+    STEPS       = 3 #number of cycles to wait in order to change mouth position
 
     def __init__(self, arena:Arena, x:int, y:int):
         self._arena     = arena
         self._x         = x
         self._y         = y
-        self._symbolX   = 0
+        self._symbolX   = False
+        self._symbolY   = 0 #0 = dx, 1 = sx, 2 = up, 3 = down
         arena.add(self)
 
     def move(self):
+        if self.userD != 0:
+            if self.dx == 0 and self.dy == 0:
+                self.userD = 0
+            if self.mvngAlngY:
+                if not going_to_wall(self._arena, self, 0, self.dy + self.userD):
+                    self.dx = 0
+                    self.dy = self.userD
+                    if self.dy < 0:
+                        self._symbolY = 2
+                    else:
+                        self._symbolY = 3
+                    self.userD = 0
+            else:
+                if not going_to_wall(self._arena, self, self.dx + self.userD, 0):
+                    self.dx = self.userD
+                    self.dy = 0
+                    if self.dx < 0:
+                        self._symbolY = 1
+                    else:
+                        self._symbolY = 0
+                    self.userD = 0
+                    
         if not going_to_wall(self._arena, self, self.dx, self.dy):
-            self._x += self.dx
-            self._y += self.dy
-            if self.dx or self.dy != 0 and self.dx % 4 == 0 or self.dy % 4 == 0:
-                if self.symbolPos > 0:
-                    self.symbolPos = 0
-                else:
-                    self.symbolPos += 1
-            
-        self._symbolX = self.symbolPos * self.W
+            if self.dx or self.dy != 0:
+                self._x += self.dx
+                self._y += self.dy
+                
+                if self._x > self._arena.size()[0]:#se passo per il tunnel
+                    self._x = - self.W
+                elif self._x < - self.W :
+                    self._x = self._arena.size()[0]
+                    
+                self.symbolPos += 1
+                if self.symbolPos % self.STEPS == 0:
+                    self._symbolX = not self._symbolX
+                    if self.symbolPos > self.STEPS * 2:
+                        self.symbolPos = 0
+        else:
+            self.dx, self.dy = 0, 0
+        #self._symbolX = self.symbolPos // self.STEPS * self.W
 
     def moveUp(self):
-        self.dx , self.dy = 0, -self.SPEED
+        if going_to_wall(self._arena, self, 0, self.dy - self.SPEED) and (self.dx or self.dy != 0):
+            self.userD = -self.SPEED
+            self.mvngAlngY = True
+        else:
+            self.dx , self.dy = 0, -self.SPEED
+            self._symbolY = 2
     
     def moveDown(self):
-        self.dx , self.dy = 0, +self.SPEED
+        if going_to_wall(self._arena, self, 0, self.dy + self.SPEED) and (self.dx or self.dy != 0):
+            self.userD = +self.SPEED
+            self.mvngAlngY = True
+        else:
+            self.dx , self.dy = 0, +self.SPEED
+            self._symbolY = 3
     
     def moveLeft(self):
-        self.dx , self.dy = -self.SPEED, 0
+        if going_to_wall(self._arena, self, self.dx - self.SPEED, 0) and (self.dx or self.dy != 0):
+            self.userD = -self.SPEED
+            self.mvngAlngY = False
+        else:
+            self.dx , self.dy = -self.SPEED, 0
+            self._symbolY = 1
     
     def moveRight(self):
-        self.dx , self.dy = +self.SPEED, 0
+        if going_to_wall(self._arena, self, self.dx + self.SPEED, 0) and (self.dx or self.dy != 0):
+            self.userD = +self.SPEED
+            self.mvngAlngY = False
+        else:
+            self.dx , self.dy = +self.SPEED, 0
+            self._symbolY = 0
 
     def collide(self, other):
-        pass
+        if isinstance(other, Cookie):
+            self._arena.remove(other)
 
     def rect(self):
         return self._x, self._y, self.W, self.H
 
     def symbol(self):
-        return self._symbolX, 0
+        #return self._symbolX, self._symbolY * self.H
+        return self.W if self._symbolX else 0, self._symbolY * self.H
 
